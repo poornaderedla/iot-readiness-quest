@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AssessmentHero } from "./AssessmentHero";
 import { TestIntroduction } from "./TestIntroduction";
+import { PsychometricEvaluation } from "./PsychometricEvaluation";
 
 type AssessmentStep = "hero" | "introduction" | "psychometric" | "technical" | "wiscar" | "results";
 
@@ -24,14 +25,14 @@ export function AssessmentFlow() {
       );
     
     case "psychometric":
-      // TODO: Implement psychometric evaluation
       return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Psychometric Evaluation</h1>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
-        </div>
+        <PsychometricEvaluation 
+          onComplete={(scores) => {
+            console.log("Psychometric scores:", scores);
+            goToStep("technical");
+          }}
+          onBack={() => goToStep("introduction")}
+        />
       );
     
     case "technical":
