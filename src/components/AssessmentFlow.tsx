@@ -2,11 +2,25 @@ import { useState } from "react";
 import { AssessmentHero } from "./AssessmentHero";
 import { TestIntroduction } from "./TestIntroduction";
 import { PsychometricEvaluation } from "./PsychometricEvaluation";
+import { TechnicalAptitude, TechnicalScores } from "./TechnicalAptitude";
+import { WiscarFramework, WiscarScores } from "./WiscarFramework";
+import { AssessmentResults } from "./AssessmentResults";
 
 type AssessmentStep = "hero" | "introduction" | "psychometric" | "technical" | "wiscar" | "results";
 
+interface PsychometricScores {
+  interest: number;
+  personality: number;
+  cognitive: number;
+  motivation: number;
+  overall: number;
+}
+
 export function AssessmentFlow() {
   const [currentStep, setCurrentStep] = useState<AssessmentStep>("hero");
+  const [psychometricScores, setPsychometricScores] = useState<PsychometricScores | null>(null);
+  const [technicalScores, setTechnicalScores] = useState<TechnicalScores | null>(null);
+  const [wiscarScores, setWiscarScores] = useState<WiscarScores | null>(null);
 
   const goToStep = (step: AssessmentStep) => {
     setCurrentStep(step);
@@ -28,7 +42,7 @@ export function AssessmentFlow() {
       return (
         <PsychometricEvaluation 
           onComplete={(scores) => {
-            console.log("Psychometric scores:", scores);
+            setPsychometricScores(scores);
             goToStep("technical");
           }}
           onBack={() => goToStep("introduction")}
@@ -36,36 +50,44 @@ export function AssessmentFlow() {
       );
     
     case "technical":
-      // TODO: Implement technical aptitude test
       return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Technical Aptitude</h1>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
-        </div>
+        <TechnicalAptitude 
+          onComplete={(scores) => {
+            setTechnicalScores(scores);
+            goToStep("wiscar");
+          }}
+          onBack={() => goToStep("psychometric")}
+        />
       );
     
     case "wiscar":
-      // TODO: Implement WISCAR framework
       return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">WISCAR Framework</h1>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
-        </div>
+        <WiscarFramework 
+          onComplete={(scores) => {
+            setWiscarScores(scores);
+            goToStep("results");
+          }}
+          onBack={() => goToStep("technical")}
+        />
       );
     
     case "results":
-      // TODO: Implement results page
+      if (!psychometricScores || !technicalScores || !wiscarScores) {
+        // If somehow we got here without completing all assessments, restart
+        return <AssessmentHero onStartAssessment={() => goToStep("introduction")} />;
+      }
       return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Assessment Results</h1>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
-        </div>
+        <AssessmentResults 
+          psychometricScores={psychometricScores}
+          technicalScores={technicalScores}
+          wiscarScores={wiscarScores}
+          onRestart={() => {
+            setPsychometricScores(null);
+            setTechnicalScores(null);
+            setWiscarScores(null);
+            goToStep("hero");
+          }}
+        />
       );
     
     default:
